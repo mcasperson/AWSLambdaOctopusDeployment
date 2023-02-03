@@ -1,6 +1,4 @@
 
-# To use an existing environment, delete the resource above and use the following lookup instead:
-# data.octopusdeploy_library_variable_sets.library_variable_set_octopub.library_variable_sets[0].id
 data "octopusdeploy_library_variable_sets" "library_variable_set_octopub" {
   ids          = null
   partial_name = "Octopub"
