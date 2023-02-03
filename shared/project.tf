@@ -13,6 +13,83 @@ provider "octopusdeploy" {
   space_id = "${var.octopus_space_id}"
 }
 
+# Import existing resources with the following commands:
+# RESOURCE_ID=$(curl -H "X-Octopus-ApiKey: ${OCTOPUS_CLI_API_KEY}" https://mattc.octopus.app/api/Spaces-1409/LibraryVariableSets | jq -r '.Items[] | select(.Name=="Octopub") | .Id')
+# terraform import octopusdeploy_library_variable_set.library_variable_set_octopub ${RESOURCE_ID}
+resource "octopusdeploy_library_variable_set" "library_variable_set_octopub" {
+  name        = "Octopub"
+  description = ""
+}
+
+resource "octopusdeploy_variable" "library_variable_set_octopub_aws_account_0" {
+  owner_id     = "${octopusdeploy_library_variable_set.library_variable_set_octopub.id}"
+  value        = "${octopusdeploy_aws_account.account_aws_account.id}"
+  name         = "AWS.Account"
+  type         = "AmazonWebServicesAccount"
+  is_sensitive = false
+
+  scope {
+    actions      = []
+    channels     = []
+    environments = []
+    machines     = []
+    roles        = null
+    tenant_tags  = null
+  }
+  depends_on = []
+}
+variable "library_variable_set_octopub_aws_region_1" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The value associated with the variable AWS.Region"
+  default     = "ap-southeast-2"
+}
+resource "octopusdeploy_variable" "library_variable_set_octopub_aws_region_1" {
+  owner_id     = "${octopusdeploy_library_variable_set.library_variable_set_octopub.id}"
+  value        = "${var.library_variable_set_octopub_aws_region_1}"
+  name         = "AWS.Region"
+  type         = "String"
+  description  = ""
+  is_sensitive = false
+
+  scope {
+    actions      = []
+    channels     = []
+    environments = []
+    machines     = []
+    roles        = null
+    tenant_tags  = null
+  }
+  depends_on = []
+}
+
+variable "library_variable_set_octopub_aws_cloudformation_apigatewaystack_0" {
+  type        = string
+  nullable    = false
+  sensitive   = false
+  description = "The value associated with the variable AWS.CloudFormation.ApiGatewayStack"
+  default     = "OctopubApiGateway"
+}
+resource "octopusdeploy_variable" "library_variable_set_octopub_aws_cloudformation_apigatewaystack_0" {
+  owner_id     = "${octopusdeploy_library_variable_set.library_variable_set_octopub.id}"
+  value        = "${var.library_variable_set_octopub_aws_cloudformation_apigatewaystack_0}"
+  name         = "AWS.CloudFormation.ApiGatewayStack"
+  type         = "String"
+  description  = ""
+  is_sensitive = false
+
+  scope {
+    actions      = []
+    channels     = []
+    environments = []
+    machines     = []
+    roles        = null
+    tenant_tags  = null
+  }
+  depends_on = []
+}
+
 resource "octopusdeploy_environment" "environment_development" {
   name                         = "Development"
   description                  = "An environment for the development team."
