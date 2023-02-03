@@ -1,31 +1,11 @@
 
-
-# Import existing resources with the following commands:
-# RESOURCE_ID=$(curl -H "X-Octopus-ApiKey: ${OCTOPUS_CLI_API_KEY}" https://mattc.octopus.app/api/Spaces-1508/Accounts | jq -r '.Items[] | select(.Name=="AWS Account") | .Id')
-# terraform import octopusdeploy_aws_account.account_aws_account ${RESOURCE_ID}
-resource "octopusdeploy_aws_account" "account_aws_account" {
-  name                              = "AWS Account"
-  description                       = ""
-  environments                      = []
-  tenant_tags                       = []
-  tenants                           = null
-  tenanted_deployment_participation = "Untenanted"
-  access_key                        = "AKIAZCSFURGBA4TMNQMC"
-  secret_key                        = "${var.account_aws_account}"
-}
-variable "account_aws_account" {
-  type        = string
-  nullable    = false
-  sensitive   = true
-  description = "The AWS secret key associated with the account AWS Account"
-}
-
-# Import existing resources with the following commands:
-# RESOURCE_ID=$(curl -H "X-Octopus-ApiKey: ${OCTOPUS_CLI_API_KEY}" https://mattc.octopus.app/api/Spaces-1508/LibraryVariableSets | jq -r '.Items[] | select(.Name=="Octopub") | .Id')
-# terraform import octopusdeploy_library_variable_set.library_variable_set_octopub ${RESOURCE_ID}
-resource "octopusdeploy_library_variable_set" "library_variable_set_octopub" {
-  name        = "Octopub"
-  description = ""
+# To use an existing environment, delete the resource above and use the following lookup instead:
+# data.octopusdeploy_library_variable_sets.library_variable_set_octopub.library_variable_sets[0].id
+data "octopusdeploy_library_variable_sets" "library_variable_set_octopub" {
+  ids          = null
+  partial_name = "Octopub"
+  skip         = 0
+  take         = 1
 }
 
 data "octopusdeploy_worker_pools" "workerpool_hosted_ubuntu" {
@@ -149,7 +129,7 @@ resource "octopusdeploy_project" "project_api_gateway" {
   is_version_controlled                = false
   lifecycle_id                         = "${octopusdeploy_lifecycle.lifecycle_infrastructure.id}"
   project_group_id                     = "${octopusdeploy_project_group.project_group_infrastructure.id}"
-  included_library_variable_sets       = ["${octopusdeploy_library_variable_set.library_variable_set_octopub.id}"]
+  included_library_variable_sets       = ["${data.octopusdeploy_library_variable_sets.library_variable_set_octopub.library_variable_sets[0].id}"]
   tenanted_deployment_participation    = "Untenanted"
 
   connectivity_policy {
@@ -171,84 +151,6 @@ data "octopusdeploy_channels" "channel_default" {
   partial_name = "Default"
   skip         = 0
   take         = 1
-}
-
-variable "library_variable_set_octopub_aws_region_1" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The value associated with the variable AWS.Region"
-  default     = "ap-southeast-2"
-}
-resource "octopusdeploy_variable" "library_variable_set_octopub_aws_region_1" {
-  owner_id     = "${octopusdeploy_library_variable_set.library_variable_set_octopub.id}"
-  value        = "${var.library_variable_set_octopub_aws_region_1}"
-  name         = "AWS.Region"
-  type         = "String"
-  description  = ""
-  is_sensitive = false
-
-  scope {
-    actions      = []
-    channels     = []
-    environments = []
-    machines     = []
-    roles        = null
-    tenant_tags  = null
-  }
-  depends_on = []
-}
-
-variable "library_variable_set_octopub_aws_cloudformation_apigatewaystack_0" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The value associated with the variable AWS.CloudFormation.ApiGatewayStack"
-  default     = "OctopubApiGateway"
-}
-resource "octopusdeploy_variable" "library_variable_set_octopub_aws_cloudformation_apigatewaystack_0" {
-  owner_id     = "${octopusdeploy_library_variable_set.library_variable_set_octopub.id}"
-  value        = "${var.library_variable_set_octopub_aws_cloudformation_apigatewaystack_0}"
-  name         = "AWS.CloudFormation.ApiGatewayStack"
-  type         = "String"
-  description  = ""
-  is_sensitive = false
-
-  scope {
-    actions      = []
-    channels     = []
-    environments = []
-    machines     = []
-    roles        = null
-    tenant_tags  = null
-  }
-  depends_on = []
-}
-
-variable "api_gateway_aws_account_0" {
-  type        = string
-  nullable    = false
-  sensitive   = false
-  description = "The value associated with the variable AWS.Account"
-  default     = "octopusdeploy_aws_account.account_aws_account"
-}
-resource "octopusdeploy_variable" "api_gateway_aws_account_0" {
-  owner_id     = "${octopusdeploy_project.project_api_gateway.id}"
-  value        = "${var.api_gateway_aws_account_0}"
-  name         = "AWS.Account"
-  type         = "AmazonWebServicesAccount"
-  description  = ""
-  is_sensitive = false
-
-  scope {
-    actions      = []
-    channels     = []
-    environments = []
-    machines     = []
-    roles        = null
-    tenant_tags  = null
-  }
-  depends_on = []
 }
 
 provider "octopusdeploy" {
