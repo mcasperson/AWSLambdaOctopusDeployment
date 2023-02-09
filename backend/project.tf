@@ -300,85 +300,115 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_backend_
       is_required                        = false
       worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_hosted_ubuntu.worker_pools[0].id}"
       properties                         = {
-        "Octopus.Action.Aws.CloudFormationTemplateParameters" = jsonencode([
-          {
-            "ParameterKey" = "RestApi"
-            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.RestApi}"
-          },
-          {
-            "ParameterKey" = "LambdaDescription"
-            "ParameterValue" = "#{Octopus.Deployment.Id} v#{Octopus.Action[Upload Lambda].Package[].PackageVersion}"
-          },
-          {
-            "ParameterKey" = "ProxyLambda"
-            "ParameterValue" = "#{Octopus.Action[Deploy Reverse Proxy Lambda].Output.AwsOutputs[ProxyLambda]}"
-          },
-        ])
-        "Octopus.Action.Aws.AssumeRole" = "False"
-        "Octopus.Action.Aws.CloudFormation.Tags" = jsonencode([
-          {
-            "key" = "OctopusTransient"
-            "value" = "True"
-          },
-          {
-            "value" = "#{if Octopus.Deployment.Tenant.Id}#{Octopus.Deployment.Tenant.Id}#{/if}#{unless Octopus.Deployment.Tenant.Id}untenanted#{/unless}"
-            "key" = "OctopusTenantId"
-          },
-          {
-            "value" = "#{Octopus.Step.Id}"
-            "key" = "OctopusStepId"
-          },
-          {
-            "key" = "OctopusRunbookRunId"
-            "value" = "#{if Octopus.RunBookRun.Id}#{Octopus.RunBookRun.Id}#{/if}#{unless Octopus.RunBookRun.Id}none#{/unless}"
-          },
-          {
-            "key" = "OctopusDeploymentId"
-            "value" = "#{if Octopus.Deployment.Id}#{Octopus.Deployment.Id}#{/if}#{unless Octopus.Deployment.Id}none#{/unless}"
-          },
-          {
-            "key" = "OctopusProjectId"
-            "value" = "#{Octopus.Project.Id}"
-          },
-          {
-            "key" = "OctopusEnvironmentId"
-            "value" = "#{Octopus.Environment.Id}"
-          },
-          {
-            "value" = "#{Octopus.Environment.Name | Replace \" .*\" \"\"}"
-            "key" = "Environment"
-          },
-          {
-            "key" = "DeploymentProject"
-            "value" = "Backend_Service"
-          },
-        ])
         "Octopus.Action.AwsAccount.Variable" = "AWS.Account"
-        "Octopus.Action.Aws.CloudFormationTemplateParametersRaw" = jsonencode([
-          {
-            "ParameterKey" = "RestApi"
-            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.RestApi}"
-          },
-          {
-            "ParameterKey" = "LambdaDescription"
-            "ParameterValue" = "#{Octopus.Deployment.Id} v#{Octopus.Action[Upload Lambda].Package[].PackageVersion}"
-          },
-          {
-            "ParameterKey" = "ProxyLambda"
-            "ParameterValue" = "#{Octopus.Action[Deploy Reverse Proxy Lambda].Output.AwsOutputs[ProxyLambda]}"
-          },
-        ])
+        "Octopus.Action.AwsAccount.UseInstanceRole" = "False"
+        "Octopus.Action.Aws.Region" = "#{AWS.Region}"
         "Octopus.Action.Aws.IamCapabilities" = jsonencode([
           "CAPABILITY_AUTO_EXPAND",
           "CAPABILITY_IAM",
           "CAPABILITY_NAMED_IAM",
         ])
-        "Octopus.Action.Aws.CloudFormationStackName" = "OctopubBackendLambda"
-        "Octopus.Action.AwsAccount.UseInstanceRole" = "False"
-        "Octopus.Action.Aws.CloudFormationTemplate" = "# This template creates a new version of the reverse proxy lambda. The stack created by\n# this step must have a unique name, and must be tagged in such a way as to indicate\n# which Octopus deployment created it. Subsequent deployments will clean up this\n# stack once the API Gateway stage no longer points to it, thus cleaning up old lambda versions.\nParameters:\n  RestApi:\n    Type: String\n  LambdaDescription:\n    Type: String\n  ProxyLambda:\n    Type: String\nResources:\n  LambdaVersion:\n    Type: 'AWS::Lambda::Version'\n    Properties:\n      FunctionName: !Ref ProxyLambda\n      Description: !Ref LambdaDescription\n  ApplicationLambdaPermissions:\n    Type: 'AWS::Lambda::Permission'\n    Properties:\n      FunctionName: !Ref LambdaVersion\n      Action: 'lambda:InvokeFunction'\n      Principal: apigateway.amazonaws.com\n      SourceArn: !Join\n        - ''\n        - - 'arn:'\n          - !Ref 'AWS::Partition'\n          - ':execute-api:'\n          - !Ref 'AWS::Region'\n          - ':'\n          - !Ref 'AWS::AccountId'\n          - ':'\n          - !Ref RestApi\n          - /*/*\nOutputs:\n  ProxyLambdaVersion:\n    Description: The name of the Lambda version resource deployed by this template\n    Value: !Ref LambdaVersion\n"
-        "Octopus.Action.Aws.Region" = "#{AWS.Region}"
-        "Octopus.Action.Aws.WaitForCompletion" = "True"
         "Octopus.Action.Aws.TemplateSource" = "Inline"
+        "Octopus.Action.Aws.CloudFormationTemplateParametersRaw" = jsonencode([
+          {
+            "ParameterKey" = "EnvironmentName"
+            "ParameterValue" = "#{Octopus.Environment.Name | Replace \" .*\" \"\"}"
+          },
+          {
+            "ParameterKey" = "RestApi"
+            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.RestApi}"
+          },
+          {
+            "ParameterKey" = "ResourceId"
+            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.Api}"
+          },
+          {
+            "ParameterKey" = "LambdaS3Key"
+            "ParameterValue" = "#{Octopus.Action[Upload Lambda].Package[].PackageId}.#{Octopus.Action[Upload Lambda].Package[].PackageVersion}.zip"
+          },
+          {
+            "ParameterKey" = "LambdaS3Bucket"
+            "ParameterValue" = "#{Octopus.Action[Create S3 bucket].Output.AwsOutputs[LambdaS3Bucket]}"
+          },
+          {
+            "ParameterKey" = "LambdaName"
+            "ParameterValue" = "Product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+          },
+          {
+            "ParameterKey" = "SubnetGroupName"
+            "ParameterValue" = "product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+          },
+          {
+            "ParameterKey" = "LambdaDescription"
+            "ParameterValue" = "#{Octopus.Deployment.Id} v#{Octopus.Action[Upload Lambda].Package[].PackageVersion}"
+          },
+          {
+            "ParameterKey" = "DBUsername"
+            "ParameterValue" = "productadmin"
+          },
+          {
+            "ParameterKey" = "DBPassword"
+            "ParameterValue" = "Password01!"
+          },
+        ])
+        "Octopus.Action.Template.Version" = "1"
+        "Octopus.Action.Aws.CloudFormationStackName" = "OctopubBackendLambda"
+        "Vpc.Cidr" = "10.0.0.0/16"
+        "Octopus.Action.Aws.CloudFormation.Tags" = jsonencode([
+          {
+            "value" = "#{Octopus.Environment.Name | Replace \" .*\" \"\"}"
+            "key" = "Environment"
+          },
+          {
+            "value" = "Backend_Service"
+            "key" = "DeploymentProject"
+          },
+        ])
+        "Octopus.Action.Aws.CloudFormationTemplate" = "# This stack creates a new application lambda.\nParameters:\n  EnvironmentName:\n    Type: String\n    Default: '#{Octopus.Environment.Name}'\n  RestApi:\n    Type: String\n  ResourceId:\n    Type: String\n  LambdaS3Key:\n    Type: String\n  LambdaS3Bucket:\n    Type: String\n  LambdaName:\n    Type: String\n  SubnetGroupName:\n    Type: String\n  LambdaDescription:\n    Type: String\n  DBUsername:\n    Type: String\n  DBPassword:\n    Type: String\nResources:\n  VPC:\n    Type: \"AWS::EC2::VPC\"\n    Properties:\n      CidrBlock: \"#{Vpc.Cidr}\"\n      Tags:\n      - Key: \"Name\"\n        Value: !Ref LambdaName\n  SubnetA:\n    Type: \"AWS::EC2::Subnet\"\n    Properties:\n      AvailabilityZone: !Select\n        - 0\n        - !GetAZs\n          Ref: 'AWS::Region'\n      VpcId: !Ref \"VPC\"\n      CidrBlock: \"10.0.0.0/24\"\n  SubnetB:\n    Type: \"AWS::EC2::Subnet\"\n    Properties:\n      AvailabilityZone: !Select\n        - 1\n        - !GetAZs\n          Ref: 'AWS::Region'\n      VpcId: !Ref \"VPC\"\n      CidrBlock: \"10.0.1.0/24\"\n  RouteTable:\n    Type: \"AWS::EC2::RouteTable\"\n    Properties:\n      VpcId: !Ref \"VPC\"\n  SubnetGroup:\n    Type: \"AWS::RDS::DBSubnetGroup\"\n    Properties:\n      DBSubnetGroupName: !Ref SubnetGroupName\n      DBSubnetGroupDescription: \"Subnet Group\"\n      SubnetIds:\n      - !Ref \"SubnetA\"\n      - !Ref \"SubnetB\"\n  InstanceSecurityGroup:\n    Type: \"AWS::EC2::SecurityGroup\"\n    Properties:\n      GroupName: \"Example Security Group\"\n      GroupDescription: \"RDS traffic\"\n      VpcId: !Ref \"VPC\"\n      SecurityGroupEgress:\n      - IpProtocol: \"-1\"\n        CidrIp: \"0.0.0.0/0\"\n  InstanceSecurityGroupIngress:\n    Type: \"AWS::EC2::SecurityGroupIngress\"\n    DependsOn: \"InstanceSecurityGroup\"\n    Properties:\n      GroupId: !Ref \"InstanceSecurityGroup\"\n      IpProtocol: \"tcp\"\n      FromPort: \"0\"\n      ToPort: \"65535\"\n      SourceSecurityGroupId: !Ref \"InstanceSecurityGroup\"\n  RDSCluster:\n    Type: \"AWS::RDS::DBCluster\"\n    Properties:\n      DBSubnetGroupName: !Ref \"SubnetGroup\"\n      MasterUsername: !Ref \"DBUsername\"\n      MasterUserPassword: !Ref \"DBPassword\"\n      DatabaseName: \"products\"\n      Engine: \"aurora-mysql\"\n      EngineMode: \"serverless\"\n      VpcSecurityGroupIds:\n      - !Ref \"InstanceSecurityGroup\"\n      ScalingConfiguration:\n        AutoPause: true\n        MaxCapacity: 1\n        MinCapacity: 1\n        SecondsUntilAutoPause: 300\n    DependsOn:\n      - SubnetGroup\n  AppLogGroup:\n    Type: 'AWS::Logs::LogGroup'\n    Properties:\n      LogGroupName: !Sub '/aws/lambda/$${LambdaName}'\n      RetentionInDays: 14\n  IamRoleLambdaExecution:\n    Type: 'AWS::IAM::Role'\n    Properties:\n      AssumeRolePolicyDocument:\n        Version: 2012-10-17\n        Statement:\n          - Effect: Allow\n            Principal:\n              Service:\n                - lambda.amazonaws.com\n            Action:\n              - 'sts:AssumeRole'\n      Policies:\n        - PolicyName: !Sub '$${LambdaName}-policy'\n          PolicyDocument:\n            Version: 2012-10-17\n            Statement:\n              - Effect: Allow\n                Action:\n                  - 'logs:CreateLogStream'\n                  - 'logs:CreateLogGroup'\n                  - 'logs:PutLogEvents'\n                Resource:\n                  - !Sub \u003e-\n                    arn:$${AWS::Partition}:logs:$${AWS::Region}:$${AWS::AccountId}:log-group:/aws/lambda/$${LambdaName}*:*\n              - Effect: Allow\n                Action:\n                  - 'ec2:DescribeInstances'\n                  - 'ec2:CreateNetworkInterface'\n                  - 'ec2:AttachNetworkInterface'\n                  - 'ec2:DeleteNetworkInterface'\n                  - 'ec2:DescribeNetworkInterfaces'\n                Resource: \"*\"\n      Path: /\n      RoleName: !Sub '$${LambdaName}-role'\n  MigrationLambda:\n    Type: 'AWS::Lambda::Function'\n    Properties:\n      Description: !Ref LambdaDescription\n      Code:\n        S3Bucket: !Ref LambdaS3Bucket\n        S3Key: !Ref LambdaS3Key\n      Environment:\n        Variables:\n          DATABASE_HOSTNAME: !GetAtt\n          - RDSCluster\n          - Endpoint.Address\n          DATABASE_USERNAME: !Ref \"DBUsername\"\n          DATABASE_PASSWORD: !Ref \"DBPassword\"\n          MIGRATE_AT_START: !!str \"false\"\n          LAMBDA_NAME: \"DatabaseInit\"\n          QUARKUS_PROFILE: \"faas\"\n      FunctionName: !Sub '$${LambdaName}-DBMigration'\n      Handler: not.used.in.provided.runtime\n      MemorySize: 256\n      PackageType: Zip\n      Role: !GetAtt\n        - IamRoleLambdaExecution\n        - Arn\n      Runtime: provided\n      Timeout: 600\n      VpcConfig:\n        SecurityGroupIds:\n          - !Ref \"InstanceSecurityGroup\"\n        SubnetIds:\n          - !Ref \"SubnetA\"\n          - !Ref \"SubnetB\"\n  ApplicationLambda:\n    Type: 'AWS::Lambda::Function'\n    Properties:\n      Description: !Ref LambdaDescription\n      Code:\n        S3Bucket: !Ref LambdaS3Bucket\n        S3Key: !Ref LambdaS3Key\n      Environment:\n        Variables:\n          DATABASE_HOSTNAME: !GetAtt\n          - RDSCluster\n          - Endpoint.Address\n          DATABASE_USERNAME: !Ref \"DBUsername\"\n          DATABASE_PASSWORD: !Ref \"DBPassword\"\n          MIGRATE_AT_START: !!str \"false\"\n          QUARKUS_PROFILE: \"faas\"\n      FunctionName: !Sub '$${LambdaName}'\n      Handler: not.used.in.provided.runtime\n      MemorySize: 256\n      PackageType: Zip\n      Role: !GetAtt\n        - IamRoleLambdaExecution\n        - Arn\n      Runtime: provided\n      Timeout: 600\n      VpcConfig:\n        SecurityGroupIds:\n          - !Ref \"InstanceSecurityGroup\"\n        SubnetIds:\n          - !Ref \"SubnetA\"\n          - !Ref \"SubnetB\"\nOutputs:\n  ApplicationLambda:\n    Description: The Lambda ref\n    Value: !Ref ApplicationLambda\n"
+        "Octopus.Action.Aws.CloudFormationTemplateParameters" = jsonencode([
+          {
+            "ParameterKey" = "EnvironmentName"
+            "ParameterValue" = "#{Octopus.Environment.Name | Replace \" .*\" \"\"}"
+          },
+          {
+            "ParameterKey" = "RestApi"
+            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.RestApi}"
+          },
+          {
+            "ParameterKey" = "ResourceId"
+            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.Api}"
+          },
+          {
+            "ParameterKey" = "LambdaS3Key"
+            "ParameterValue" = "#{Octopus.Action[Upload Lambda].Package[].PackageId}.#{Octopus.Action[Upload Lambda].Package[].PackageVersion}.zip"
+          },
+          {
+            "ParameterKey" = "LambdaS3Bucket"
+            "ParameterValue" = "#{Octopus.Action[Create S3 bucket].Output.AwsOutputs[LambdaS3Bucket]}"
+          },
+          {
+            "ParameterKey" = "LambdaName"
+            "ParameterValue" = "Product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+          },
+          {
+            "ParameterKey" = "SubnetGroupName"
+            "ParameterValue" = "product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+          },
+          {
+            "ParameterKey" = "LambdaDescription"
+            "ParameterValue" = "#{Octopus.Deployment.Id} v#{Octopus.Action[Upload Lambda].Package[].PackageVersion}"
+          },
+          {
+            "ParameterKey" = "DBUsername"
+            "ParameterValue" = "productadmin"
+          },
+          {
+            "ParameterKey" = "DBPassword"
+            "ParameterValue" = "Password01!"
+          },
+        ])
+        "Octopus.Action.Aws.AssumeRole" = "False"
+        "Octopus.Action.Aws.WaitForCompletion" = "True"
       }
       environments                       = []
       excluded_environments              = []
