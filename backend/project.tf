@@ -924,7 +924,7 @@ resource "octopusdeploy_channel" "channel_mainline" {
   name        = "Mainline"
   description = "The channel through which mainline releases are deployed"
   project_id  = "${octopusdeploy_project.project_backend_service.id}"
-  is_default  = true
+  is_default  = false
 
   rule {
 
@@ -939,3 +939,21 @@ resource "octopusdeploy_channel" "channel_mainline" {
   depends_on  = [octopusdeploy_deployment_process.deployment_process_project_backend_service]
 }
 
+resource "octopusdeploy_channel" "channel_feature_branch" {
+  name        = "Feature Branch"
+  description = "The channel through which development releases are deployed"
+  project_id  = "${octopusdeploy_project.project_backend_service.id}"
+  is_default  = true
+
+  rule {
+
+    action_package {
+      deployment_action = "Upload Lambda"
+    }
+
+    tag = ".+"
+  }
+
+  tenant_tags = []
+  depends_on  = [octopusdeploy_deployment_process.deployment_process_project_backend_service]
+}
