@@ -362,11 +362,11 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_backend_
           },
           {
             "ParameterKey" = "LambdaName"
-            "ParameterValue" = "Product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+            "ParameterValue" = "octopub-backend-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
           },
           {
             "ParameterKey" = "SubnetGroupName"
-            "ParameterValue" = "product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
+            "ParameterValue" = "octopub-backend-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
           },
           {
             "ParameterKey" = "LambdaDescription"
