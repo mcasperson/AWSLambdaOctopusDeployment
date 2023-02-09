@@ -208,7 +208,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_backend_
       tenant_tags                        = []
 
       primary_package {
-        package_id           = "com.octopus:products-microservice-lambda-h2"
+        package_id           = "com.octopus:products-microservice-lambda"
         acquisition_location = "Server"
         feed_id              = "${data.octopusdeploy_feeds.maven_feed.feeds[0].id}"
         id                   = "c7b8ee0a-98d2-428c-9b66-552d59426e4e"
