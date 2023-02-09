@@ -234,10 +234,10 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_backend_
       tenant_tags                        = []
 
       primary_package {
-        package_id           = "products-microservice-lambda"
+        package_id           = "com.octopus:products-microservice-lambda-h2"
         acquisition_location = "Server"
-        feed_id              = "${data.octopusdeploy_feeds.built_in_feed.feeds[0].id}"
-        id                   = "76a9ea89-868a-4882-b255-fb02ca8f2eb2"
+        feed_id              = "${data.octopusdeploy_feeds.maven_feed.feeds[0].id}"
+        id                   = "c7b8ee0a-98d2-428c-9b66-552d59426e4e"
         properties           = { SelectionMode = "immediate" }
       }
 
@@ -706,7 +706,13 @@ terraform {
   }
 }
 
-
+data "octopusdeploy_feeds" "maven_feed" {
+  feed_type    = "Maven"
+  ids          = null
+  partial_name = "Sales Maven Feed"
+  skip         = 0
+  take         = 1
+}
 
 data "octopusdeploy_feeds" "built_in_feed" {
   feed_type    = "BuiltIn"
