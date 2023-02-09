@@ -283,48 +283,7 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_backend_
           "CAPABILITY_NAMED_IAM",
         ])
         "Octopus.Action.Aws.TemplateSource" = "Inline"
-        "Octopus.Action.Aws.CloudFormationTemplateParametersRaw" = jsonencode([
-          {
-            "ParameterKey" = "EnvironmentName"
-            "ParameterValue" = "#{Octopus.Environment.Name | Replace \" .*\" \"\"}"
-          },
-          {
-            "ParameterKey" = "RestApi"
-            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.RestApi}"
-          },
-          {
-            "ParameterKey" = "ResourceId"
-            "ParameterValue" = "#{Octopus.Action[Get Stack Outputs].Output.Api}"
-          },
-          {
-            "ParameterKey" = "LambdaS3Key"
-            "ParameterValue" = "#{Octopus.Action[Upload Lambda].Package[].PackageId}.#{Octopus.Action[Upload Lambda].Package[].PackageVersion}.zip"
-          },
-          {
-            "ParameterKey" = "LambdaS3Bucket"
-            "ParameterValue" = "#{Octopus.Action[Create S3 bucket].Output.AwsOutputs[LambdaS3Bucket]}"
-          },
-          {
-            "ParameterKey" = "LambdaName"
-            "ParameterValue" = "Product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
-          },
-          {
-            "ParameterKey" = "SubnetGroupName"
-            "ParameterValue" = "product-mcasperson-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}"
-          },
-          {
-            "ParameterKey" = "LambdaDescription"
-            "ParameterValue" = "#{Octopus.Deployment.Id} v#{Octopus.Action[Upload Lambda].Package[].PackageVersion}"
-          },
-          {
-            "ParameterKey" = "DBUsername"
-            "ParameterValue" = "productadmin"
-          },
-          {
-            "ParameterKey" = "DBPassword"
-            "ParameterValue" = "Password01!"
-          },
-        ])
+        "Octopus.Action.Aws.CloudFormationTemplateParametersRaw" = jsonencode([])
         "Octopus.Action.Template.Version" = "1"
         "Octopus.Action.Aws.CloudFormationStackName" = "OctopubBackendLambda"
         "Vpc.Cidr" = "10.0.0.0/16"
@@ -383,6 +342,42 @@ resource "octopusdeploy_deployment_process" "deployment_process_project_backend_
         ])
         "Octopus.Action.Aws.AssumeRole" = "False"
         "Octopus.Action.Aws.WaitForCompletion" = "True"
+      }
+      environments                       = []
+      excluded_environments              = []
+      channels                           = []
+      tenant_tags                        = []
+      features                           = []
+    }
+
+    properties   = {}
+    target_roles = []
+  }
+  step {
+    condition           = "Success"
+    name                = "Run Database Migrations"
+    package_requirement = "LetOctopusDecide"
+    start_trigger       = "StartAfterPrevious"
+
+    action {
+      action_type                        = "Octopus.AwsRunScript"
+      name                               = "Run Database Migrations"
+      notes                              = "Run the Lambda that performs database migrations."
+      condition                          = "Success"
+      run_on_server                      = true
+      is_disabled                        = false
+      can_be_used_for_project_versioning = false
+      is_required                        = false
+      worker_pool_id                     = "${data.octopusdeploy_worker_pools.workerpool_hosted_ubuntu.worker_pools[0].id}"
+      properties                         = {
+        "OctopusUseBundledTooling" = "False"
+        "Octopus.Action.Aws.Region" = "#{AWS.Region}"
+        "Octopus.Action.Aws.AssumeRole" = "False"
+        "Octopus.Action.AwsAccount.Variable" = "AWS.Account"
+        "Octopus.Action.Script.ScriptBody" = "echo \"Downloading Docker images\"\n\necho \"##octopus[stdout-verbose]\"\n\ndocker pull amazon/aws-cli 2\u003e\u00261\n\n# Alias the docker run commands\nshopt -s expand_aliases\nalias aws=\"docker run --rm -i -v $(pwd):/build -e AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY amazon/aws-cli\"\n\necho \"##octopus[stdout-default]\"\n\naws lambda invoke \\\n  --function-name 'octopub-backend-#{Octopus.Environment.Name | Replace \" .*\" \"\" | ToLower}-DBMigration' \\\n  --payload '{}' \\\n  response.json\n"
+        "Octopus.Action.AwsAccount.UseInstanceRole" = "False"
+        "Octopus.Action.Script.ScriptSource" = "Inline"
+        "Octopus.Action.Script.Syntax" = "Bash"
       }
       environments                       = []
       excluded_environments              = []
