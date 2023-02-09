@@ -24,7 +24,10 @@ Run the following commands to initialize and apply the shared Terraform configur
 ```bash
 cd shared
 terraform init
-terraform apply -var=octopus_server=http://yourinstancegoeshere.octopus.app -var=octopus_apikey=API-YOURAPIKEYGOESHERE -var=octopus_space_id=Spaces-1
+terraform apply \
+  -var=octopus_server=http://yourinstancegoeshere.octopus.app \
+  -var=octopus_apikey=API-YOURAPIKEYGOESHERE \
+  -var=octopus_space_id=Spaces-1
 ```
 
 ### Applying the API Gateway project configuration
@@ -32,9 +35,12 @@ terraform apply -var=octopus_server=http://yourinstancegoeshere.octopus.app -var
 Run the following commands to initialize and apply the API Gateway Terraform configuration:
 
 ```bash
-cd (apigateway)
+cd apigateway
 terraform init
-terraform apply -var=octopus_server=http://yourinstancegoeshere.octopus.app -var=octopus_apikey=API-YOURAPIKEYGOESHERE -var=octopus_space_id=Spaces-1
+terraform apply \
+  -var=octopus_server=http://yourinstancegoeshere.octopus.app \
+  -var=octopus_apikey=API-YOURAPIKEYGOESHERE \
+  -var=octopus_space_id=Spaces-1
 ```
 
 ### Applying the Lambda project configuration
@@ -44,5 +50,8 @@ Run the following commands to initialize and apply the API Gateway Terraform con
 ```bash
 cd backend
 terraform init
-terraform apply -var=octopus_server=http://yourinstancegoeshere.octopus.app -var=octopus_apikey=API-YOURAPIKEYGOESHERE -var=octopus_space_id=Spaces-1
+terraform apply \
+  -var=octopus_server=http://yourinstancegoeshere.octopus.app \
+  -var=octopus_apikey=API-YOURAPIKEYGOESHERE \
+  -var=octopus_space_id=Spaces-1
 ```
