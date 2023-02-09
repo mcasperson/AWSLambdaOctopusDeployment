@@ -140,7 +140,7 @@ resource "octopusdeploy_aws_account" "account_aws_account" {
   tenant_tags                       = []
   tenants                           = null
   tenanted_deployment_participation = "Untenanted"
-  access_key                        = "AKIAZCSFURGBA4TMNQMC"
+  access_key                        = "${var.account_aws_account_access}"
   secret_key                        = "${var.account_aws_account}"
 }
 variable "account_aws_account" {
@@ -148,6 +148,12 @@ variable "account_aws_account" {
   nullable    = false
   sensitive   = true
   description = "The AWS secret key associated with the account AWS Account"
+}
+variable "account_aws_account_access" {
+  type        = string
+  nullable    = false
+  sensitive   = true
+  description = "The AWS access key associated with the account AWS Account"
 }
 
 variable "octopus_server" {
