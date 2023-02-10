@@ -17,9 +17,7 @@ resource "octopusdeploy_maven_feed" "sales_maven_feed" {
   name                           = "Sales Maven Feed"
 }
 
-# Import existing resources with the following commands:
-# RESOURCE_ID=$(curl -H "X-Octopus-ApiKey: ${OCTOPUS_CLI_API_KEY}" https://mattc.octopus.app/api/Spaces-1409/LibraryVariableSets | jq -r '.Items[] | select(.Name=="Octopub") | .Id')
-# terraform import octopusdeploy_library_variable_set.library_variable_set_octopub ${RESOURCE_ID}
+
 resource "octopusdeploy_library_variable_set" "library_variable_set_octopub" {
   name        = "Octopub"
   description = ""
@@ -134,9 +132,6 @@ resource "octopusdeploy_environment" "environment_production" {
   }
 }
 
-# Import existing resources with the following commands:
-# RESOURCE_ID=$(curl -H "X-Octopus-ApiKey: ${OCTOPUS_CLI_API_KEY}" https://mattc.octopus.app/api/Spaces-1409/Accounts | jq -r '.Items[] | select(.Name=="AWS Account") | .Id')
-# terraform import octopusdeploy_aws_account.account_aws_account ${RESOURCE_ID}
 resource "octopusdeploy_aws_account" "account_aws_account" {
   name                              = "AWS Account"
   description                       = ""
